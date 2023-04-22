@@ -1,0 +1,2 @@
+ALTER TABLE customers
+  ADD COLUMN name VARCHAR(10) NOT NULL;
