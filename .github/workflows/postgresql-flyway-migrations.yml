@@ -1,0 +1,42 @@
+name: postgresql-flyway-migrations
+on:
+  - push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_DB: ${{ secrets.DB_TEST }}
+          POSTGRES_USER: ${{ secrets.USER_TEST }}
+          POSTGRES_PASSWORD: ${{ secrets.PASSWORD_TEST }}
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    steps:
+      - uses: actions/checkout@v2
+      - uses: joshuaavalon/flyway-action@v3.0.0
+        with:
+          url: ${{ secrets.URL_TEST }}
+          user: ${{ secrets.USER_TEST }}
+          password: ${{ secrets.PASSWORD_TEST }}
+          locations: filesystem:./migrations
+      - run: echo 'testing'
+      
+      
+  deploy-to-prod:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: joshuaavalon/flyway-action@v3.0.0
+        with:
+          url: ${{ secrets.URL_PROD }}
+          user: ${{ secrets.USER_PROD }}
+          password: ${{ secrets.PASSWORD_PROD }}
+          locations: filesystem:./migrations
+      - run: echo 'deploying to prod'
+          
